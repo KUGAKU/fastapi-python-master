@@ -5,7 +5,6 @@ from settings import Session
 
 
 class AbstractSampleRepository(ABC):
-
     @abstractmethod
     def sample(self, message: str) -> dict:
         raise NotImplementedError()
