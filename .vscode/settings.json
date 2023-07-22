@@ -1,5 +1,13 @@
 {
-  "cSpell.words": ["dimodules", "fastapi", "pydantic", "pytest"],
+  "cSpell.words": [
+    "DBAPI",
+    "dimodules",
+    "fastapi",
+    "poolclass",
+    "pydantic",
+    "pytest",
+    "sqlalchemy"
+  ],
   "python.testing.pytestArgs": ["tests"],
   "python.testing.unittestEnabled": false,
   "python.testing.pytestEnabled": true
