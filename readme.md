@@ -3,7 +3,7 @@
 ## how to start
 
 1. run `pip install -r requirements.txt`
-2. run Debug and Execute in VSCode
+2. run Run and Debug in VSCode
 
 ## how to add model
 
