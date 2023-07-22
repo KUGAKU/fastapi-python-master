@@ -3,14 +3,14 @@ from injector import Injector
 
 from dimodules.sample_di import SampleDi
 from presentation.sample_controller import SampleController
-from schemas.sample import SampleResponse
+from schemas.sample import SampleRequest, SampleResponse
 
 router = APIRouter()
 
-@router.get("/", response_model=SampleResponse)
-def retrieve_sample_message():
+@router.post("/", response_model=SampleResponse)
+def sample(request: SampleRequest):
     injector = Injector([SampleDi()])
     sample_controller = injector.get(SampleController)
-    response = sample_controller.sample()
+    response = sample_controller.sample(message=request.message)
     return SampleResponse(message=response["message"])
 

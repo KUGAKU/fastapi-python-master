@@ -5,7 +5,7 @@ from repository.sample_repository import AbstractSampleRepository
 
 class AbstractSampleService(ABC):
     @abstractmethod
-    def sample(self) -> dict:
+    def sample(self, message: str) -> dict:
         raise NotImplementedError()
 
 class SampleService(AbstractSampleService):
@@ -15,5 +15,5 @@ class SampleService(AbstractSampleService):
             raise TypeError("sample_repository must be an instance of AbstractSampleRepository")
         self.sample_repository = sample_repository
 
-    def sample(self) -> dict:
-        return self.sample_repository.sample()
+    def sample(self, message: str) -> dict:
+        return self.sample_repository.sample(message=message)

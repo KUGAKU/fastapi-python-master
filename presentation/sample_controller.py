@@ -7,7 +7,7 @@ from service.sample_service import AbstractSampleService
 
 class AbstractSampleController(ABC):
     @abstractmethod
-    def sample(self) -> dict:
+    def sample(self, message: str) -> dict:
         raise NotImplementedError()
 
 class SampleController(AbstractSampleController):
@@ -18,5 +18,5 @@ class SampleController(AbstractSampleController):
         pass
         self.sampleService = sampleService
 
-    def sample(self) -> dict:
-        return self.sampleService.sample()
+    def sample(self, message: str) -> dict:
+        return self.sampleService.sample(message=message)

@@ -34,7 +34,7 @@ PyYAML==6.0.1
 requests==2.31.0
 six==1.16.0
 sniffio==1.3.0
-SQLAlchemy==2.0.19
+SQLAlchemy @ git+https://github.com/sqlalchemy/sqlalchemy.git@45b45619e75cb51bf1c3549a122edf8151a5d818
 starlette==0.27.0
 typing_extensions==4.7.1
 urllib3==2.0.4

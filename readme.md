@@ -8,8 +8,3 @@
 ## How to run test
 
 1. run `pytest`
-
-## Todo
-
-1. add ORmapper
-2. add transaction system
