@@ -1,4 +1,5 @@
 from pydantic import BaseModel
 
-class EchoResponse(BaseModel):
+
+class SampleResponse(BaseModel):
     message: str
