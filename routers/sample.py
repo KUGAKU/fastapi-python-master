@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 from injector import Injector
 
-from dimodules.sample_di import SampleDi
+from di_modules.sample_di import SampleDi
 from presentation.sample_controller import SampleController
 from schemas.sample import SampleRequest, SampleResponse
 
