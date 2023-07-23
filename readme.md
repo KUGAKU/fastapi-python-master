@@ -2,8 +2,10 @@
 
 ## how to start
 
-1. run `pip install -r requirements.txt`
-2. run Run and Debug in VSCode
+1. run `python -m venv venv`
+2. run `source venv/bin/activate`
+3. run `pip install -r requirements.txt`
+4. run Run and Debug in VSCode
 
 ## how to add model
 
