@@ -18,7 +18,6 @@ class SampleController(AbstractSampleController):
             raise TypeError(
                 "sampleService must be an instance of AbstractSampleService"
             )
-        pass
         self.sampleService = sampleService
 
     def sample(self, message: str) -> dict:
