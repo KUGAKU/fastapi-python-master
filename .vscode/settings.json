@@ -3,11 +3,14 @@
     "DBAPI",
     "dimodules",
     "fastapi",
+    "Nuxt",
+    "openai",
     "poolclass",
     "pydantic",
     "pytest",
     "sessionmaker",
-    "sqlalchemy"
+    "sqlalchemy",
+    "venv"
   ],
   "python.testing.pytestArgs": ["tests"],
   "python.testing.unittestEnabled": false,
