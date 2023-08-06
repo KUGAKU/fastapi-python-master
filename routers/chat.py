@@ -5,7 +5,8 @@ from presentation.chat_controller import ChatController
 
 router = APIRouter()
 
-@router.post("/")
+
+@router.get("/")
 def chat():
     chat_controller = ChatController()
     return chat_controller.chat()

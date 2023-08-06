@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+import json
 import os
 from fastapi.responses import StreamingResponse
 
@@ -21,6 +22,7 @@ class ChatController(AbstractChatController):
         response = StreamingResponse(
             content=self.stream_content(), media_type="text/event-stream"
         )
+        print("xxx")
         return response
 
     def stream_content(self):
@@ -38,7 +40,7 @@ class ChatController(AbstractChatController):
                 }
             ],
             temperature=0.7,
-            max_tokens=100,
+            max_tokens=800,
             top_p=0.95,
             frequency_penalty=0,
             presence_penalty=0,
@@ -48,7 +50,9 @@ class ChatController(AbstractChatController):
         for event in response:
             if "content" in event["choices"][0]["delta"]:
                 event_text = event["choices"][0]["delta"]["content"]
+                data = json.dumps({"message": event_text}, ensure_ascii=False)
                 packet = "event: %s\n" % "message"
-                packet += "data: %s\n" % event_text
+                packet += "data: %s\n" % data
                 packet += "\n"
+                print(data)
                 yield packet
