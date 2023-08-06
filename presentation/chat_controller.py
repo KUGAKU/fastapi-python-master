@@ -22,7 +22,6 @@ class ChatController(AbstractChatController):
         response = StreamingResponse(
             content=self.stream_content(), media_type="text/event-stream"
         )
-        print("xxx")
         return response
 
     def stream_content(self):
@@ -54,5 +53,9 @@ class ChatController(AbstractChatController):
                 packet = "event: %s\n" % "message"
                 packet += "data: %s\n" % data
                 packet += "\n"
-                print(data)
                 yield packet
+        data = json.dumps({"message": "done"}, ensure_ascii=False)
+        packet = "event: %s\n" % "message"
+        packet += "data: %s\n" % data
+        packet += "\n"
+        yield packet
