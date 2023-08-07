@@ -8,7 +8,5 @@ COPY ./ /app
 
 RUN pip install --no-cache-dir -r requirements.txt
 
-ENV OPENAI_API_KEY="0fc1cc146b0b4ea1a44298e1a51482b6"
-
 ENTRYPOINT [ "uvicorn", "main:app", "--host", "0.0.0.0", "--reload" ]
 
