@@ -7,6 +7,6 @@ router = APIRouter()
 
 
 @router.get("/")
-def chat():
+def chat(chatMessage: str):
     chat_controller = ChatController()
-    return chat_controller.chat()
+    return chat_controller.chat(chatMessage)

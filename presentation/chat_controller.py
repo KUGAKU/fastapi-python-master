@@ -9,7 +9,7 @@ import openai
 
 class AbstractChatController(ABC):
     @abstractmethod
-    def chat(self):
+    def chat(self, chatMessage: str):
         raise NotImplementedError()
 
 
@@ -18,13 +18,13 @@ class ChatController(AbstractChatController):
     def __init__(self) -> None:
         pass
 
-    def chat(self):
+    def chat(self, chatMessage: str):
         response = StreamingResponse(
-            content=self.stream_content(), media_type="text/event-stream"
+            content=self.stream_content(chatMessage), media_type="text/event-stream"
         )
         return response
 
-    def stream_content(self):
+    def stream_content(self, chatMessage: str):
         openai.api_type = "azure"
         openai.api_base = "https://dev-aoai.openai.azure.com/"
         openai.api_version = "2023-03-15-preview"
@@ -32,12 +32,7 @@ class ChatController(AbstractChatController):
 
         response = openai.ChatCompletion.create(
             engine="gpt-35-turbo",
-            messages=[
-                {
-                    "role": "user",
-                    "content": "terraformのソースコードをリファクタリングしたいと考えているんだけど、どういった手順でリファクタリングするのが良いと思う？",
-                }
-            ],
+            messages=[{"role": "user", "content": chatMessage}],
             temperature=0.7,
             max_tokens=800,
             top_p=0.95,
