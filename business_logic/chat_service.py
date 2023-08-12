@@ -7,6 +7,8 @@ from injector import inject
 from data_access.chat_repository import AbstractChatRepository
 from data_source.openai_data_source import AbstractOpenaiDataSource
 
+from openai import openai_object
+
 
 class AbstractChatService(ABC):
     @abstractmethod
@@ -32,19 +34,19 @@ class ChatService(AbstractChatService):
         self.chat_repository = chat_repository
         self.openai_data_source = openai_data_source
 
+    def create_sse_packet(self, message: str) -> str:
+        """Convert a given message into SSE packet format."""
+        data = json.dumps({"message": message}, ensure_ascii=False)
+        return f"event: message\ndata: {data}\n\n"
+
+    def extract_event_content(self, event: openai_object.OpenAIObject) -> str:
+        """Extract the content from a given event."""
+        return event["choices"][0]["delta"].get("content", "")
+
     def get_chat_data(self, chatMessage: str):
         response = self.openai_data_source.get_chat_stream_content(chatMessage)
-
         for event in response:
-            if "content" in event["choices"][0]["delta"]:
-                event_text = event["choices"][0]["delta"]["content"]
-                data = json.dumps({"message": event_text}, ensure_ascii=False)
-                packet = "event: %s\n" % "message"
-                packet += "data: %s\n" % data
-                packet += "\n"
-                yield packet
-        data = json.dumps({"message": "done"}, ensure_ascii=False)
-        packet = "event: %s\n" % "message"
-        packet += "data: %s\n" % data
-        packet += "\n"
-        yield packet
+            event_content = self.extract_event_content(event)
+            if event_content:
+                yield self.create_sse_packet(event_content)
+        yield self.create_sse_packet("done")

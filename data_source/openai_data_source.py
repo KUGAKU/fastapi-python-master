@@ -1,15 +1,13 @@
 from abc import ABC, abstractmethod
 import os
-from typing import Any, Generator
 
+from openai import openai_object
 import openai
 
 
 class AbstractOpenaiDataSource(ABC):
     @abstractmethod
-    def get_chat_stream_content(
-        self, chatMessage: str
-    ) -> Generator[Any | list | dict, None, None] | Any | list | dict:
+    def get_chat_stream_content(self, chatMessage: str) -> openai_object.OpenAIObject:
         raise NotImplementedError()
 
 
