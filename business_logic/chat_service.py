@@ -1,13 +1,10 @@
 from abc import ABC, abstractmethod
 import json
 from typing import Any, Generator
-
 from injector import inject
-
 from data_access.chat_repository import AbstractChatRepository
 from data_source.openai_data_source import AbstractOpenaiDataSource
-
-from openai import openai_object
+from models.chat_completion_chunk import ChatCompletionChunk
 
 
 class AbstractChatService(ABC):
@@ -39,9 +36,9 @@ class ChatService(AbstractChatService):
         data = json.dumps({"message": message}, ensure_ascii=False)
         return f"event: message\ndata: {data}\n\n"
 
-    def extract_event_content(self, event: openai_object.OpenAIObject) -> str:
+    def extract_event_content(self, event: ChatCompletionChunk) -> str:
         """Extract the content from a given event."""
-        return event["choices"][0]["delta"].get("content", "")
+        return event.choices[0].delta.get("content", "")
 
     def get_chat_data(self, chatMessage: str):
         response = self.openai_data_source.get_chat_stream_content(chatMessage)
