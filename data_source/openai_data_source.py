@@ -2,19 +2,19 @@ from abc import ABC, abstractmethod
 import os
 from typing import Generator
 import openai
-from models.chat_completion_chunk import ChatCompletionChunk
+from data_transfer_object.chat_completion_chunk import ChatCompletionChunk
 
 
 class AbstractOpenaiDataSource(ABC):
     @abstractmethod
-    def get_chat_stream_content(
+    def get_chat_stream_chunk_content(
         self, chatMessage: str
     ) -> Generator[ChatCompletionChunk, None, None]:
         raise NotImplementedError()
 
 
 class OpenaiDataSource(AbstractOpenaiDataSource):
-    def get_chat_stream_content(self, chatMessage: str):
+    def get_chat_stream_chunk_content(self, chatMessage: str):
         openai.api_type = os.getenv("OPENAI_API_TYPE")
         openai.api_base = os.getenv("OPENAI_API_BASE")
         openai.api_version = os.getenv("OPENAI_API_VERSION")
