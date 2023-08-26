@@ -1,9 +1,12 @@
 {
   "cSpell.words": [
+    "backref",
+    "ChatOpenAI",
     "DBAPI",
     "dimodules",
     "dunps",
     "fastapi",
+    "langchain",
     "Nuxt",
     "openai",
     "poolclass",
@@ -11,6 +14,8 @@
     "pytest",
     "sessionmaker",
     "sqlalchemy",
+    "top_p",
+    "UNIQUEIDENTIFIER",
     "venv"
   ],
   "python.testing.pytestArgs": ["tests"],

@@ -1,21 +1,23 @@
 from abc import ABC, abstractmethod
 import os
-
-from openai import openai_object
+from typing import Generator
 import openai
+from data_transfer_object.chat_completion_chunk import ChatCompletionChunk
 
 
 class AbstractOpenaiDataSource(ABC):
     @abstractmethod
-    def get_chat_stream_content(self, chatMessage: str) -> openai_object.OpenAIObject:
+    def get_chat_stream_chunk_content(
+        self, chatMessage: str
+    ) -> Generator[ChatCompletionChunk, None, None]:
         raise NotImplementedError()
 
 
 class OpenaiDataSource(AbstractOpenaiDataSource):
-    def get_chat_stream_content(self, chatMessage: str):
-        openai.api_type = "azure"
-        openai.api_base = "https://dev-aoai.openai.azure.com/"
-        openai.api_version = "2023-03-15-preview"
+    def get_chat_stream_chunk_content(self, chatMessage: str):
+        openai.api_type = os.getenv("OPENAI_API_TYPE")
+        openai.api_base = os.getenv("OPENAI_API_BASE")
+        openai.api_version = os.getenv("OPENAI_API_VERSION")
         openai.api_key = os.getenv("OPENAI_API_KEY")
 
         response = openai.ChatCompletion.create(

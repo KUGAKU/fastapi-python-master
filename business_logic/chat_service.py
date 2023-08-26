@@ -1,18 +1,22 @@
 from abc import ABC, abstractmethod
-import json
-from typing import Any, Generator
-
+from typing import Any, Generator, Optional
 from injector import inject
-
 from data_access.chat_repository import AbstractChatRepository
 from data_source.openai_data_source import AbstractOpenaiDataSource
-
-from openai import openai_object
+from data_transfer_object.chat_completion_chunk import ChatCompletionChunk
+from utils.message_buffer import MessageBufferManager
+from utils.server_sent_event_maker import (
+    ChatSSEData,
+    ChatSSEEvent,
+    ServerSentEventMaker,
+)
 
 
 class AbstractChatService(ABC):
     @abstractmethod
-    def get_chat_data(self, chatMessage: str) -> Generator[str, Any, None]:
+    def get_chat_data(
+        self, chat_message: str, conversation_id: str
+    ) -> Generator[str, Any, None]:
         raise NotImplementedError()
 
 
@@ -34,19 +38,55 @@ class ChatService(AbstractChatService):
         self.chat_repository = chat_repository
         self.openai_data_source = openai_data_source
 
-    def create_sse_packet(self, message: str) -> str:
-        """Convert a given message into SSE packet format."""
-        data = json.dumps({"message": message}, ensure_ascii=False)
-        return f"event: message\ndata: {data}\n\n"
-
-    def extract_event_content(self, event: openai_object.OpenAIObject) -> str:
+    def extract_event_content(self, event: ChatCompletionChunk) -> str:
         """Extract the content from a given event."""
-        return event["choices"][0]["delta"].get("content", "")
+        return event.choices[0].delta.get("content", "")
 
-    def get_chat_data(self, chatMessage: str):
-        response = self.openai_data_source.get_chat_stream_content(chatMessage)
-        for event in response:
-            event_content = self.extract_event_content(event)
-            if event_content:
-                yield self.create_sse_packet(event_content)
-        yield self.create_sse_packet("done")
+    def is_existing_conversation(self, conversation_id: str) -> bool:
+        if conversation_id == "null":
+            return False
+        return True
+
+    def get_chat_data(self, chat_message: str, conversation_id: str):
+        try:
+            messageBufferManager = MessageBufferManager()
+
+            response = self.openai_data_source.get_chat_stream_chunk_content(
+                chat_message
+            )
+            for event in response:
+                event_content = self.extract_event_content(event)
+                if event_content:
+                    messageBufferManager.add_to_buffer(event_content)
+                    chatSSEData = ChatSSEData(
+                        chat_content=event_content, conversation_id=None
+                    )
+                    yield ServerSentEventMaker.create_sse_packet(
+                        ChatSSEEvent.PROGRESSION, chatSSEData
+                    )
+
+            message = messageBufferManager.get_joined_buffer()
+
+            # 既存の会話か新しい会話かによってIDが変わる為、最終的に選択されるID
+            resolved_conversation_id = ""
+            # 既存の会話
+            if self.is_existing_conversation(conversation_id):
+                self.chat_repository.update_conversation_message(
+                    message, conversation_id  # todo: fix this
+                )
+                resolved_conversation_id = conversation_id
+            else:
+                # 新しい会話
+                new_conversation_id = self.chat_repository.create_conversation_message(
+                    message
+                )
+                resolved_conversation_id = new_conversation_id
+
+            chatSSEData = ChatSSEData(
+                chat_content="", conversation_id=resolved_conversation_id
+            )  # todo: fix this
+            yield ServerSentEventMaker.create_sse_packet(
+                ChatSSEEvent.COMPLETE, chatSSEData
+            )
+        except Exception as e:
+            raise

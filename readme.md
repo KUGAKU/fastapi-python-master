@@ -10,8 +10,9 @@
 ## how to add model
 
 1. create models/xxx.py
-2. run `$ alembic revision --autogenerate -m "create tables"`
-3. run `alembic upgrade head`
+2. run `alembic stamp head`
+3. run `alembic revision --autogenerate -m "create tables"`
+4. run `alembic upgrade head`
 
 ## how to use
 
