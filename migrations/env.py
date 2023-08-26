@@ -8,6 +8,7 @@ from models.conversation import Conversations
 from models.messages import Messages
 
 from models.sample import Sample
+from models.message_type import MessageType
 from settings import Base
 
 # this is the Alembic Config object, which provides

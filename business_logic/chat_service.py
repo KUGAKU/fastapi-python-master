@@ -4,6 +4,7 @@ from injector import inject
 from data_access.chat_repository import AbstractChatRepository
 from data_source.openai_data_source import AbstractOpenaiDataSource
 from data_transfer_object.chat_completion_chunk import ChatCompletionChunk
+from models.message_type import MessageTypeEnum
 from utils.message_buffer import MessageBufferManager
 from utils.server_sent_event_maker import (
     ChatSSEData,
@@ -72,13 +73,25 @@ class ChatService(AbstractChatService):
             # 既存の会話
             if self.is_existing_conversation(conversation_id):
                 self.chat_repository.update_conversation_message(
-                    message, conversation_id  # todo: fix this
+                    chat_message,
+                    conversation_id,
+                    MessageTypeEnum.HUMAN,
+                )
+                self.chat_repository.update_conversation_message(
+                    message,
+                    conversation_id,
+                    MessageTypeEnum.ARTIFICIAL_INTELLIGENCE,  # todo: fix this
                 )
                 resolved_conversation_id = conversation_id
             else:
                 # 新しい会話
                 new_conversation_id = self.chat_repository.create_conversation_message(
-                    message
+                    chat_message, MessageTypeEnum.HUMAN
+                )
+                self.chat_repository.update_conversation_message(
+                    message,
+                    new_conversation_id,
+                    MessageTypeEnum.ARTIFICIAL_INTELLIGENCE,
                 )
                 resolved_conversation_id = new_conversation_id
 
