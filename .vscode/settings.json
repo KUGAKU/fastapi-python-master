@@ -14,6 +14,7 @@
     "pytest",
     "sessionmaker",
     "sqlalchemy",
+    "starlette",
     "top_p",
     "UNIQUEIDENTIFIER",
     "venv"

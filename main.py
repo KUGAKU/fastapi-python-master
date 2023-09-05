@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from middleware.auth_middleware import AuthMiddleware
 from routers import sample, chat
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -17,6 +18,8 @@ app.add_middleware(
     allow_methods=["*"],  # すべてのHTTPメソッドを許可します
     allow_headers=["*"],  # すべてのHTTPヘッダーを許可します
 )
+
+app.add_middleware(AuthMiddleware)
 
 app.include_router(sample.router, prefix="/sample")
 app.include_router(chat.router, prefix="/chat")
