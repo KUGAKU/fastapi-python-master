@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from typing import Optional
 
 from models.conversation import Conversations
 from models.message_type import MessageType, MessageTypeEnum
@@ -14,8 +15,12 @@ class AbstractChatRepository(ABC):
     ) -> str:
         raise NotImplementedError()
 
+    @abstractmethod
     def update_conversation_message(
-        self, message: str, conversation_id: str, message_type: MessageTypeEnum
+        self,
+        message: str,
+        conversation_id: Optional[str],
+        message_type: MessageTypeEnum,
     ) -> str:
         raise NotImplementedError()
 
@@ -54,7 +59,10 @@ class ChatRepository(AbstractChatRepository):
         return conversation_id
 
     def update_conversation_message(
-        self, message: str, conversation_id: str, message_type: MessageTypeEnum
+        self,
+        message: str,
+        conversation_id: Optional[str],
+        message_type: MessageTypeEnum,
     ) -> str:
         session = Session()
         try:

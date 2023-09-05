@@ -15,7 +15,7 @@ from utils.server_sent_event_maker import (
 
 class AbstractChatController(ABC):
     @abstractmethod
-    def startChat(self, chat_message: str, conversation_id: str):
+    def startChat(self, chat_message: str, conversation_id: Optional[str]):
         raise NotImplementedError()
 
 
@@ -26,7 +26,7 @@ class ChatController(AbstractChatController):
             raise TypeError("chat_service must be an instance of AbstractChatService")
         self.chat_service = chat_service
 
-    def startChat(self, chat_message: str, conversation_id: str):
+    def startChat(self, chat_message: str, conversation_id: Optional[str]):
         try:
             return StreamingResponse(
                 content=self.chat_service.get_chat_data(chat_message, conversation_id),

@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Any, Generator
+from typing import Any, Generator, Optional
 from injector import inject
 from data_access.chat_repository import AbstractChatRepository
 from data_source.langchain.langchain_chat_model_factory import LangchainChatModelFactory
@@ -18,7 +18,7 @@ from utils.server_sent_event_maker import (
 class AbstractChatService(ABC):
     @abstractmethod
     def get_chat_data(
-        self, chat_message: str, conversation_id: str
+        self, chat_message: str, conversation_id: Optional[str]
     ) -> Generator[str, Any, None]:
         raise NotImplementedError()
 
@@ -45,12 +45,12 @@ class ChatService(AbstractChatService):
         """Extract the content from a given event."""
         return event.choices[0].delta.get("content", "")
 
-    def is_existing_conversation(self, conversation_id: str) -> bool:
-        if conversation_id == "null":
+    def is_existing_conversation(self, conversation_id: Optional[str]) -> bool:
+        if conversation_id == None:
             return False
         return True
 
-    def get_chat_data(self, chat_message: str, conversation_id: str):
+    def get_chat_data(self, chat_message: str, conversation_id: Optional[str]):
         try:
             messageBufferManager = MessageBufferManager()
 
@@ -90,7 +90,7 @@ class ChatService(AbstractChatService):
             # message = messageBufferManager.get_joined_buffer()
 
             # 既存の会話か新しい会話かによってIDが変わる為、最終的に選択されるID
-            resolved_conversation_id = ""
+            resolved_conversation_id = None
             # 既存の会話
             if self.is_existing_conversation(conversation_id):
                 self.chat_repository.update_conversation_message(
