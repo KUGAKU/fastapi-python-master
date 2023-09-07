@@ -14,7 +14,16 @@ class AuthMiddleware(BaseHTTPMiddleware):
             return True
         return False
 
+    def is_preflight_request(self, request: Request) -> bool:
+        if request.method == "OPTIONS":
+            return True
+        return False
+
     async def dispatch(self, request: Request, call_next):
+        if self.is_preflight_request(request):
+            response = await call_next(request)
+            return response
+
         auth_header = request.headers.get("Authorization")
         if not self.exist_auth_header(auth_header):
             raise HTTPException(
