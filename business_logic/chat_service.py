@@ -73,22 +73,6 @@ class ChatService(AbstractChatService):
                 )
             message = messageBufferManager.get_joined_buffer()
 
-            # response = self.openai_data_source.get_chat_stream_chunk_content(
-            #     chat_message
-            # )
-            # for event in response:
-            #     event_content = self.extract_event_content(event)
-            #     if event_content:
-            #         messageBufferManager.add_to_buffer(event_content)
-            #         chatSSEData = ChatSSEData(
-            #             chat_content=event_content, conversation_id=None
-            #         )
-            #         yield ServerSentEventMaker.create_sse_packet(
-            #             ChatSSEEvent.PROGRESSION, chatSSEData
-            #         )
-
-            # message = messageBufferManager.get_joined_buffer()
-
             # 既存の会話か新しい会話かによってIDが変わる為、最終的に選択されるID
             resolved_conversation_id = None
             # 既存の会話
