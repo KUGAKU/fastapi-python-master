@@ -1,8 +1,10 @@
 from abc import ABC, abstractmethod
 from typing import Any, Generator, Optional
+import uuid
 from injector import inject
 from data_access.chat_repository import AbstractChatRepository
 from data_source.langchain.langchain_chat_model_factory import LangchainChatModelFactory
+from data_source.langchain.langchain_memory_factory import LangchainMemoryFactory
 from data_source.openai_data_source import AbstractOpenaiDataSource
 from data_transfer_object.chat_completion_chunk import ChatCompletionChunk
 from models.message_type import MessageTypeEnum
@@ -45,27 +47,32 @@ class ChatService(AbstractChatService):
         """Extract the content from a given event."""
         return event.choices[0].delta.get("content", "")
 
-    def is_existing_conversation(self, conversation_id: Optional[str]) -> bool:
-        if conversation_id == None:
-            return False
-        return True
+    def is_new_conversation(self, conversation_id: Optional[str]) -> bool:
+        return conversation_id is None
 
     def get_chat_data(self, chat_message: str, conversation_id: Optional[str]):
         try:
+            current_conversation_id = (
+                str(uuid.uuid4())
+                if self.is_new_conversation(conversation_id)
+                else conversation_id
+            )
+
+            if current_conversation_id is None:
+                raise ValueError("current_conversation_id should not be None.")
+
             messageBufferManager = MessageBufferManager()
+            chatModelFactory = LangchainChatModelFactory()
+            memoryFactory = LangchainMemoryFactory()
+            history = memoryFactory.create_instance(current_conversation_id)
+            history.add_user_message(chat_message)
 
             def handle_token(token: str):
                 messageBufferManager.add_to_buffer(token)
 
-            factory = LangchainChatModelFactory()
-            azure_chat_model = factory.create_instance(handle_token)
-            azure_chat_model(
-                [
-                    HumanMessage(
-                        content=chat_message,
-                    )
-                ]
-            )
+            azure_chat_model = chatModelFactory.create_instance(handle_token)
+            azure_chat_model(history.messages)
+
             for token in messageBufferManager.get_buffer():
                 chatSSEData = ChatSSEData(chat_content=token, conversation_id=None)
                 yield ServerSentEventMaker.create_sse_packet(
@@ -73,35 +80,21 @@ class ChatService(AbstractChatService):
                 )
             message = messageBufferManager.get_joined_buffer()
 
-            # 既存の会話か新しい会話かによってIDが変わる為、最終的に選択されるID
-            resolved_conversation_id = None
-            # 既存の会話
-            if self.is_existing_conversation(conversation_id):
-                self.chat_repository.update_conversation_message(
-                    chat_message,
-                    conversation_id,
-                    MessageTypeEnum.HUMAN,
-                )
-                self.chat_repository.update_conversation_message(
-                    message,
-                    conversation_id,
-                    MessageTypeEnum.ARTIFICIAL_INTELLIGENCE,  # todo: fix this
-                )
-                resolved_conversation_id = conversation_id
-            else:
-                # 新しい会話
-                new_conversation_id = self.chat_repository.create_conversation_message(
-                    chat_message, MessageTypeEnum.HUMAN
-                )
-                self.chat_repository.update_conversation_message(
-                    message,
-                    new_conversation_id,
-                    MessageTypeEnum.ARTIFICIAL_INTELLIGENCE,
-                )
-                resolved_conversation_id = new_conversation_id
+            history.add_ai_message(message)
+
+            self.chat_repository.upsert_conversation_message(
+                current_conversation_id,
+                chat_message,
+                MessageTypeEnum.HUMAN,
+            )
+            self.chat_repository.upsert_conversation_message(
+                current_conversation_id,
+                message,
+                MessageTypeEnum.ARTIFICIAL_INTELLIGENCE,
+            )
 
             chatSSEData = ChatSSEData(
-                chat_content="", conversation_id=resolved_conversation_id
+                chat_content="", conversation_id=current_conversation_id
             )  # todo: fix this
             yield ServerSentEventMaker.create_sse_packet(
                 ChatSSEEvent.COMPLETE, chatSSEData
