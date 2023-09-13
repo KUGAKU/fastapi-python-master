@@ -31,4 +31,4 @@ if not existing_message_type:
 print('success!')
 "
 
-exec "$@"
+uvicorn main:app --host 0.0.0.0
