@@ -13,7 +13,6 @@ from settings import Session
 session = Session()
 
 existing_message_type = session.query(MessageType).filter_by(message_type_name='Human').first()
-print(f'existing_message_type: message_type_id:{existing_message_type.message_type_id}, message_type_name:{existing_message_type.message_type_name}')
 if not existing_message_type:
     message_type = MessageType()
     message_type.message_type_id = MessageTypeEnum.HUMAN.value
@@ -22,7 +21,6 @@ if not existing_message_type:
     session.commit()
 
 existing_message_type = session.query(MessageType).filter_by(message_type_name='Artificial Intelligence').first()
-print(f'existing_message_type: message_type_id:{existing_message_type.message_type_id}, message_type_name:{existing_message_type.message_type_name}')
 if not existing_message_type:
     message_type = MessageType()
     message_type.message_type_id = MessageTypeEnum.ARTIFICIAL_INTELLIGENCE.value
