@@ -21,3 +21,5 @@ session.commit()
 
 print('success!')
 "
+
+exec "$@"
