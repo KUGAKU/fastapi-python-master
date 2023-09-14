@@ -9,6 +9,7 @@ app = FastAPI()
 # CORS設定のリストを定義します
 origins = [
     "http://localhost:3000",  # ローカルのNuxt.jsアプリのURL
+    "https://thankful-mud-055bfe800.3.azurestaticapps.net",
 ]
 
 # MiddlewareにCORSを追加します
