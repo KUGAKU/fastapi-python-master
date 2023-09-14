@@ -1,4 +1,4 @@
-from fastapi import HTTPException, Request
+from fastapi import HTTPException, Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware
 
 
@@ -27,6 +27,15 @@ class AuthMiddleware(BaseHTTPMiddleware):
             return True
         return False
 
+    # TODO: AzureContainerAppをAPI Managementもしくは、Application Gateway経由でアクセスできる様にしてリダイレクトを防ぎ、このメソッドを削除する
+    def is_unknown_redirect(self, response: Response) -> bool:
+        if (
+            response.headers["Location"]
+            == "https://thankful-mud-055bfe800.3.azurestaticapps.net"
+        ):
+            return True
+        return False
+
     async def dispatch(self, request: Request, call_next):
         if self.is_swagger_docs_request(request):
             response = await call_next(request)
@@ -52,5 +61,10 @@ class AuthMiddleware(BaseHTTPMiddleware):
             )
 
         response = await call_next(request)
+
+        # TODO: AzureContainerAppをAPI Managementもしくは、Application Gateway経由でアクセスできる様にしてリダイレクトを防ぎ、このメソッドを削除する
+        if self.is_unknown_redirect(response):
+            location = response.headers.get("Location")
+            response.headers["Location"] = location.replace("http:", "https:", 1)
 
         return response
