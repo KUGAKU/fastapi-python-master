@@ -19,7 +19,19 @@ class AuthMiddleware(BaseHTTPMiddleware):
             return True
         return False
 
+    def is_swagger_docs_request(self, request: Request) -> bool:
+        path = request.url.path.split("/")[-1]
+        if path == "docs":
+            return True
+        if path == "openapi.json":
+            return True
+        return False
+
     async def dispatch(self, request: Request, call_next):
+        if self.is_swagger_docs_request(request):
+            response = await call_next(request)
+            return response
+
         if self.is_preflight_request(request):
             response = await call_next(request)
             return response
