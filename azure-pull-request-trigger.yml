@@ -27,9 +27,3 @@ stages:
               dockerfile: $(dockerfilePath)
               tags: |
                 $(tag)
-          - task: Bash@3
-            displayName: Print Build Success Message
-            inputs:
-              targetType: "inline"
-              script: |
-                echo "build success"
