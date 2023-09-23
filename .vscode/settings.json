@@ -15,6 +15,7 @@
     "sessionmaker",
     "sqlalchemy",
     "starlette",
+    "Tiktoken",
     "top_p",
     "UNIQUEIDENTIFIER",
     "venv"
