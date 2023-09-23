@@ -43,10 +43,6 @@ class ChatService(AbstractChatService):
         self.chat_repository = chat_repository
         self.openai_data_source = openai_data_source
 
-    def extract_event_content(self, event: ChatCompletionChunk) -> str:
-        """Extract the content from a given event."""
-        return event.choices[0].delta.get("content", "")
-
     def is_new_conversation(self, conversation_id: Optional[str]) -> bool:
         return conversation_id is None
 
@@ -70,8 +66,21 @@ class ChatService(AbstractChatService):
             def handle_token(token: str):
                 messageBufferManager.add_to_buffer(token)
 
-            azure_chat_model = chatModelFactory.create_instance(handle_token)
-            azure_chat_model(history.messages)
+            azure_chat_openai = chatModelFactory.create_instance(handle_token)
+            human_message_token_count = azure_chat_openai.get_num_tokens(chat_message)
+            token_count_including_special_token = (
+                azure_chat_openai.get_num_tokens_from_messages(history.messages)
+            )
+
+            self.chat_repository.upsert_conversation_message(
+                current_conversation_id,
+                chat_message,
+                MessageTypeEnum.HUMAN,
+                human_message_token_count,
+                token_count_including_special_token,
+            )
+
+            azure_chat_openai(history.messages)
 
             for token in messageBufferManager.get_buffer():
                 chatSSEData = ChatSSEData(chat_content=token, conversation_id=None)
@@ -80,17 +89,19 @@ class ChatService(AbstractChatService):
                 )
             message = messageBufferManager.get_joined_buffer()
 
+            ai_message_token_count = azure_chat_openai.get_num_tokens(message)
             history.add_ai_message(message)
 
-            self.chat_repository.upsert_conversation_message(
-                current_conversation_id,
-                chat_message,
-                MessageTypeEnum.HUMAN,
+            token_count_including_special_token = (
+                azure_chat_openai.get_num_tokens_from_messages(history.messages)
             )
+
             self.chat_repository.upsert_conversation_message(
                 current_conversation_id,
                 message,
                 MessageTypeEnum.ARTIFICIAL_INTELLIGENCE,
+                ai_message_token_count,
+                token_count_including_special_token,
             )
 
             chatSSEData = ChatSSEData(

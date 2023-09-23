@@ -22,16 +22,21 @@ class Messages(Base):
     message_type_id = Column(Integer, ForeignKey("message_type.message_type_id"))
     message_type = relationship("MessageType", backref="messages")
 
+    message_token_count = Column(Integer, default=0)
+    consumed_token_count = Column(Integer, default=0)
+
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now())
 
     def __repr__(self):
-        return "<Messages('message_id={}, message_content={}, conversation_id={}, message_type_id={}, message_type={}, created_at={}, updated_at={}')>".format(
+        return "<Messages('message_id={}, message_content={}, conversation_id={}, message_type_id={}, message_type={}, message_token_count={}, consumed_token_count={},  created_at={}, updated_at={}')>".format(
             self.message_id,
             self.message_content,
             self.conversation_id,
             self.message_type_id,
             self.message_type,
+            self.message_token_count,
+            self.consumed_token_count,
             self.created_at,
             self.updated_at,
         )
