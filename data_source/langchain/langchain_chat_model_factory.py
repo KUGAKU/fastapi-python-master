@@ -105,6 +105,7 @@ class LangchainChatModelFactory:
     def create_instance(handle_token: Callable):
         return AzureChatOpenAI(
             callbacks=[CustomCallbackHandler(handle_token)],
+            tiktoken_model_name=os.environ.get("AZURE_OPENAI_TIKTOKEN_MODEL_NAME", ""),
             openai_api_base=os.environ.get("AZURE_OPENAI_API_BASE", ""),
             openai_api_version=os.environ.get("AZURE_OPENAI_API_VERSION", ""),
             deployment_name=os.environ.get("AZURE_OPENAI_DEPLOYMENT_NAME", ""),

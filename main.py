@@ -1,4 +1,6 @@
 from fastapi import FastAPI
+from pydantic import ValidationError
+from handlers.exceptions import internal_server_error_handler, validation_error_handler
 from middleware.auth_middleware import AuthMiddleware
 from routers import sample, chat
 from fastapi.middleware.cors import CORSMiddleware
@@ -21,6 +23,10 @@ app.add_middleware(
 )
 
 app.add_middleware(AuthMiddleware)
+
+app.add_exception_handler(Exception, internal_server_error_handler)
+app.add_exception_handler(ValidationError, validation_error_handler)
+
 
 app.include_router(sample.router, prefix="/sample")
 app.include_router(chat.router, prefix="/chat")
