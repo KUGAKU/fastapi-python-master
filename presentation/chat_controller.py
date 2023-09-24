@@ -5,12 +5,6 @@ from fastapi.responses import StreamingResponse
 from injector import inject
 
 from business_logic.chat_service import AbstractChatService
-from schemas.chat import ChatRequest
-from utils.server_sent_event_maker import (
-    ChatSSEData,
-    ChatSSEEvent,
-    ServerSentEventMaker,
-)
 
 
 class AbstractChatController(ABC):
@@ -27,23 +21,7 @@ class ChatController(AbstractChatController):
         self.chat_service = chat_service
 
     def startChat(self, chat_message: str, conversation_id: Optional[str]):
-        try:
-            return StreamingResponse(
-                content=self.chat_service.get_chat_data(chat_message, conversation_id),
-                media_type="text/event-stream",
-            )
-        except Exception as e:
-            print(e)
-
-            def error(e: Exception):
-                error_message = str(e)
-                yield ServerSentEventMaker.create_sse_packet(  # todo: fix this
-                    ChatSSEEvent.ERROR,
-                    ChatSSEData(chat_content=error_message, conversation_id=None),
-                )
-
-            return StreamingResponse(
-                content=error(e),
-                status_code=500,
-                media_type="text/event-stream",
-            )
+        return StreamingResponse(
+            content=self.chat_service.get_chat_data(chat_message, conversation_id),
+            media_type="text/event-stream",
+        )

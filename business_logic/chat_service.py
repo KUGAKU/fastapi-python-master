@@ -11,8 +11,10 @@ from models.message_type import MessageTypeEnum
 from utils.message_buffer import MessageBufferManager
 from langchain.schema import HumanMessage
 from utils.server_sent_event_maker import (
-    ChatSSEData,
-    ChatSSEEvent,
+    CompleteSSEData,
+    ErrorSSEData,
+    ProgressionSSEData,
+    SSEEvent,
     ServerSentEventMaker,
 )
 
@@ -83,9 +85,11 @@ class ChatService(AbstractChatService):
             azure_chat_openai(history.messages)
 
             for token in messageBufferManager.get_buffer():
-                chatSSEData = ChatSSEData(chat_content=token, conversation_id=None)
                 yield ServerSentEventMaker.create_sse_packet(
-                    ChatSSEEvent.PROGRESSION, chatSSEData
+                    SSEEvent.PROGRESSION,
+                    ProgressionSSEData(
+                        chat_content=token, conversation_id=current_conversation_id
+                    ),
                 )
             message = messageBufferManager.get_joined_buffer()
 
@@ -104,11 +108,11 @@ class ChatService(AbstractChatService):
                 token_count_including_special_token,
             )
 
-            chatSSEData = ChatSSEData(
-                chat_content="", conversation_id=current_conversation_id
-            )  # todo: fix this
             yield ServerSentEventMaker.create_sse_packet(
-                ChatSSEEvent.COMPLETE, chatSSEData
+                SSEEvent.COMPLETE, CompleteSSEData()
             )
-        except Exception as e:
-            raise
+        except Exception as ex:
+            yield ServerSentEventMaker.create_sse_packet(
+                SSEEvent.ERROR,
+                ErrorSSEData(ex=ex),
+            )
